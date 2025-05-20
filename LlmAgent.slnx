@@ -9,4 +9,7 @@
     <File Path="nuget.config" />
     <Project Path="tools/tools.csproj" />
   </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/LlmAgent/LlmAgent.csproj" Id="fe81a9de-2a1a-4833-b419-10860e368926" />
+  </Folder>
 </Solution>
