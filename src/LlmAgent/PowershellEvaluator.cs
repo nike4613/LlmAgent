@@ -190,6 +190,7 @@ internal sealed class PowershellEvaluator : IDisposable
         agent.AddTool(
             "powershell_eval", """
             Evaluates a PowerShell command.
+            Also capable of invoking arbitrary commands.
 
             Some useful commands:
             - "Get-ChildItem dir/" - Gets the content of `dir/` (supports wildcards)
