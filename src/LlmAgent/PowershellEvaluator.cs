@@ -26,6 +26,7 @@ internal sealed class PowershellEvaluator : IDisposable
         try
         {
             commStream.Close();
+            powershellProcess.EnableRaisingEvents = false;
             powershellProcess.Kill(true);
             processDiedCts.Dispose();
         }
