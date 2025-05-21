@@ -33,9 +33,10 @@ var agent = new AgentLoop(chat, jsonCtx, $"Working directory: {Environment.Curre
 
 agent.AddTool("sum_int", "Add two integers and return the result.",
     jsonCtx.ArithmeticArgs,
+    jsonCtx.Int32,
     (args, ct) =>
     {
-        return Task.FromResult((args.Lhs + args.Rhs).ToString(CultureInfo.InvariantCulture));
+        return new(args.Lhs + args.Rhs);
     });
 
 agent.OnMessage += (message) =>

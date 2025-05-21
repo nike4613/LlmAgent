@@ -3,6 +3,7 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Json.Schema;
 using OpenAI.Chat;
+using static LlmAgent.AgentLoop;
 
 namespace LlmAgent;
 
@@ -37,9 +38,11 @@ internal sealed class AgentLoop
         Messages.Add(new SystemChatMessage(Constants.SystemPrompt.Replace("{{SYS_EXTRA}}", systemExtra, StringComparison.Ordinal)));
     }
 
-    private sealed record ToolDefinition(ChatTool Tool, JsonSchema Schema, Func<JsonDocument, CancellationToken, Task<string>> Invoke);
+    public delegate ValueTask<TResult> ToolFunction<TArguments, TResult>(TArguments args, CancellationToken cancellationToken);
 
-    public void AddTool(string name, string description, JsonSchema paramSchema, Func<JsonDocument, CancellationToken, Task<string>> invoke)
+    private sealed record ToolDefinition(ChatTool Tool, JsonSchema Schema, ToolFunction<JsonDocument, string> Invoke);
+
+    public void AddTool(string name, string description, JsonSchema paramSchema, ToolFunction<JsonDocument, string> invoke)
     {
         using var mstream = new MemoryStream();
         JsonSerializer.Serialize(mstream, paramSchema, ctx.JsonSchema);
@@ -49,7 +52,7 @@ internal sealed class AgentLoop
         tools.Add(name, new(tool, paramSchema, invoke));
     }
 
-    public void AddTool(string name, string description, JsonTypeInfo paramType, Func<JsonDocument, CancellationToken, Task<string>> invoke)
+    public void AddTool(string name, string description, JsonTypeInfo paramType, ToolFunction<JsonDocument, string> invoke)
     {
         AddTool(name, description,
             JsonSerializer.Deserialize(
@@ -58,11 +61,18 @@ internal sealed class AgentLoop
             invoke);
     }
 
-    public void AddTool<T>(string name, string description, JsonTypeInfo<T> paramType, Func<T, CancellationToken, Task<string>> invoke)
+    public void AddTool<T>(string name, string description, JsonTypeInfo<T> paramType, ToolFunction<T, string> invoke)
     {
         AddTool(name, description,
             paramType,
             (doc, ct) => invoke(JsonSerializer.Deserialize(doc, paramType)!, ct));
+    }
+
+    public void AddTool<T, R>(string name, string description, JsonTypeInfo<T> paramType, JsonTypeInfo<R> resultType, ToolFunction<T, R> invoke)
+    {
+        AddTool(name, description,
+            paramType,
+            async (doc, ct) => JsonSerializer.Serialize(await invoke(JsonSerializer.Deserialize(doc, paramType)!, ct).ConfigureAwait(false), resultType));
     }
 
     public event Action<ChatMessage>? OnMessage;
@@ -134,7 +144,7 @@ internal sealed class AgentLoop
                             continue;
                         }
 
-                        AddMessage(new ToolChatMessage(tool.Id, $"Tool output:\n------\n{result}"));
+                        AddMessage(new ToolChatMessage(tool.Id, $"Tool output: {result}"));
                     }
                     break;
 

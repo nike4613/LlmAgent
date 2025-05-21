@@ -46,6 +46,9 @@ internal static class Constants
         - When your task involves writing or modifying files:
             - Do NOT tell the user to "save the file" or "copy the code into a file" if you already created or modified the file using \`write_file\`. Instead, reference the file as already saved.
             - Do NOT show the full contents of large files you have already written, unless the user explicitly asks for them.
+        - Think "out loud" to the user.
+            - The user should see all of your thought processes as you work
+            - Do not hide thoughts from the user. Make sure your thinking is visible, so that the user can audit your actions when necessary.
         
         {{SYS_EXTRA}}
         """;
