@@ -68,6 +68,7 @@ await agent.Run(arg.Prompt, cts.Token).ConfigureAwait(false);
 if (arg.SessionFile is { } sessionFile)
 {
     using var fs = File.OpenWrite(sessionFile);
+    fs.SetLength(0);
     foreach (var msg in agent.Messages)
     {
         var bc = BinaryContent.Create(msg);
