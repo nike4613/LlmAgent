@@ -50,7 +50,7 @@ agent.OnMessage += (message) =>
             Console.WriteLine($"User: {usr.Content[0].Text}");
             break;
         case AssistantChatMessage ass:
-            Console.WriteLine($"Assistant: {ass.Content[0].Text}");
+            Console.WriteLine($"Assistant: {ass.Content[0].Text} {string.Join(" ", ass.ToolCalls.Select(t => $"(tool {t.FunctionName})"))}");
             break;
         case ToolChatMessage tool:
             Console.WriteLine($"Tool: {tool.Content[0].Text}");

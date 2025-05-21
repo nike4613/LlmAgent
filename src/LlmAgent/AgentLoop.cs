@@ -31,7 +31,7 @@ internal sealed class AgentLoop
         this.ctx = ctx;
         options = new()
         {
-
+            AllowParallelToolCalls = true,
         };
 
         Messages.Add(new SystemChatMessage(Constants.SystemPrompt.Replace("{{SYS_EXTRA}}", systemExtra, StringComparison.Ordinal)));
