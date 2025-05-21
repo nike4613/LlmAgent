@@ -1,4 +1,5 @@
 ﻿using System.ClientModel;
+using System.ClientModel.Primitives;
 using LlmAgent;
 using OpenAI;
 using OpenAI.Chat;
@@ -21,7 +22,8 @@ var client = new OpenAIClient(
     new()
     {
         Endpoint = arg.ApiUrl,
-        UserAgentApplicationId = "nike4613/llmagent"
+        UserAgentApplicationId = "nike4613/llmagent",
+        RetryPolicy = new ClientRetryPolicy()
     });
 
 var chat = client.GetChatClient(arg.Model);
