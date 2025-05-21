@@ -33,12 +33,12 @@ using var pwshEval = await PowershellEvaluator.CreateAsync(cts.Token).ConfigureA
 
 var agent = new AgentLoop(chat, jsonCtx, $"Working directory: {Environment.CurrentDirectory}");
 
-agent.AddTool("sum_int", "Add two integers and return the result.",
-    jsonCtx.ArithmeticArgs,
-    jsonCtx.Int32,
-    (args, ct) =>
+agent.AddTool("write_file", "Sets the complete content of a file. Paths are ALWAYS relative to the original working directory.",
+    jsonCtx.WriteFileArgs,
+    async (args, ct) =>
     {
-        return new(args.Lhs + args.Rhs);
+        await File.WriteAllTextAsync(args.File, args.Content, ct).ConfigureAwait(false);
+        return "";
     });
 
 pwshEval.RegisterTool(agent, jsonCtx);

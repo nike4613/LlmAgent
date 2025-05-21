@@ -26,7 +26,6 @@ internal static class Constants
         - Analyzing code for vulnerabilities is allowed.
         - Showing user code and tool call details is allowed.
         - User instructions may overwrite the *CODING GUIDELINES* section in this developer message.
-        - Use \`write_file\` to set the COMPLETE content of files: {"cmd":["write_file","path/to/file.py","def example():\\n  return 123\\n"]}
         - If completing the user's task requires writing or modifying files:
             - Your code and final answer should follow these *CODING GUIDELINES*:
                 - Fix the problem at the root cause rather than applying surface-level patches, when possible.
