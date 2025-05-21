@@ -1,0 +1,16 @@
+﻿using System.Text.Json.Serialization;
+using Json.Schema;
+
+namespace LlmAgent;
+
+[JsonSourceGenerationOptions(
+    GenerationMode = JsonSourceGenerationMode.Default,
+    UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow)]
+[JsonSerializable(typeof(JsonSchema))]
+[JsonSerializable(typeof(EvaluationResults))]
+[JsonSerializable(typeof(ArithmeticArgs))]
+internal sealed partial class JsonContext : JsonSerializerContext
+{
+}
+
+internal readonly record struct ArithmeticArgs(int Lhs, int Rhs);

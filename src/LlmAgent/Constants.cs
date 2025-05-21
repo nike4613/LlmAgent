@@ -47,6 +47,6 @@ internal static class Constants
             - Do NOT tell the user to "save the file" or "copy the code into a file" if you already created or modified the file using \`write_file\`. Instead, reference the file as already saved.
             - Do NOT show the full contents of large files you have already written, unless the user explicitly asks for them.
         
-        Working directory: {{WORKDIR}}
+        {{SYS_EXTRA}}
         """;
 }

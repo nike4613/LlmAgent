@@ -1,4 +1,6 @@
-﻿using LlmAgent;
+﻿using System.Globalization;
+using System.Text.Json;
+using LlmAgent;
 using OpenAI;
 using OpenAI.Chat;
 
@@ -25,41 +27,36 @@ var client = new OpenAIClient(
 
 var chat = client.GetChatClient(arg.Model);
 
-var options = new ChatCompletionOptions();
+var jsonCtx = new JsonContext();
 
-var messages = new List<ChatMessage>()
+var agent = new AgentLoop(chat, jsonCtx, $"Working directory: {Environment.CurrentDirectory}");
+
+agent.AddTool("sum_int", "Add two integers and return the result.",
+    jsonCtx.ArithmeticArgs,
+    (args, ct) =>
+    {
+        return Task.FromResult((args.Lhs + args.Rhs).ToString(CultureInfo.InvariantCulture));
+    });
+
+agent.OnMessage += (message) =>
 {
-    new SystemChatMessage(Constants.SystemPrompt.Replace("{{WORKDIR}}", Environment.CurrentDirectory, StringComparison.Ordinal)),
+    switch (message)
+    {
+        case SystemChatMessage sys:
+            Console.WriteLine($"System: {sys.Content[0].Text}");
+            break;
+        case UserChatMessage usr:
+            Console.WriteLine($"User: {usr.Content[0].Text}");
+            break;
+        case AssistantChatMessage ass:
+            Console.WriteLine($"Assistant: {ass.Content[0].Text}");
+            break;
+        case ToolChatMessage tool:
+            Console.WriteLine($"Tool: {tool.Content[0].Text}");
+            break;
+    }
 };
 
-if (arg.Prompt is not null)
-{
-    messages.Add(new UserChatMessage(arg.Prompt));
-}
-
-while (true)
-{
-
-    var response = await chat.CompleteChatAsync(
-        messages,
-        options: options,
-        cancellationToken: cts.Token).ConfigureAwait(false);
-
-    var result = response.Value;
-    messages.Add(new AssistantChatMessage(response.Value.Content));
-
-    Console.WriteLine($"Assistant: {result.Content[0].Text}");
-
-    Console.Write("User: ");
-    if (Console.ReadLine() is { } line)
-    {
-        messages.Add(new UserChatMessage(line));
-        continue;
-    }
-    else
-    {
-        break;
-    }
-}
+await agent.Run(arg.Prompt, cts.Token).ConfigureAwait(false);
 
 return 0;

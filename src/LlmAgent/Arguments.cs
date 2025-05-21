@@ -21,5 +21,5 @@ internal sealed partial class Arguments
 
     [CommandLineArgument(IsPositional = true)]
     [Description("The prompt to pass to the LLM.")]
-    public string? Prompt { get; set; }
+    public required string Prompt { get; set; }
 }
