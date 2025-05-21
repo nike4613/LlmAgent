@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text.Json;
+﻿using System.ClientModel;
 using LlmAgent;
 using OpenAI;
 using OpenAI.Chat;
@@ -63,5 +62,16 @@ agent.OnMessage += (message) =>
 };
 
 await agent.Run(arg.Prompt, cts.Token).ConfigureAwait(false);
+
+if (arg.SessionFile is { } sessionFile)
+{
+    using var fs = File.OpenWrite(sessionFile);
+    foreach (var msg in agent.Messages)
+    {
+        var bc = BinaryContent.Create(msg);
+        await bc.WriteToAsync(fs, cts.Token).ConfigureAwait(false);
+        await fs.WriteAsync(new byte[] { (byte)'\n' }, cts.Token).ConfigureAwait(false);
+    }
+}
 
 return 0;

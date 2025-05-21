@@ -19,6 +19,11 @@ internal sealed partial class Arguments
     [Description("The model to use")]
     public required string Model { get; set; }
 
+    [CommandLineArgument]
+    [Description("A file to write the entire session to on completion.")]
+    [Alias("session")]
+    public string? SessionFile { get; set; }
+
     [CommandLineArgument(IsPositional = true)]
     [Description("The prompt to pass to the LLM.")]
     public required string Prompt { get; set; }
