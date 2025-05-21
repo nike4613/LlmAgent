@@ -203,6 +203,10 @@ internal sealed class PowershellEvaluator : IDisposable
                 - Variables are not shared between invocations unless declared and used as `$Global:variable`
                 - Variables can be used anywhere, including in strings like so: `"this is text before the var, [$variable] <- and that is the VALUE of the variable"`
                 - Strings can also embed more complex expressions: `"some text $($variable.Property)"`
+            
+            DO NOT USE `Get-ChildItem -Recurse .` OR `Get-ChildItem -Recurse`! These produce much too long output!
+            Instead, use `Get-ChildItem -Recurse | % { $_.FullName }` which selects just the FullName of each file. Even so, be careful. Many repositories are very large, and even that will be too much.
+            Prefer listing single directories and navigating down as needed.
             """,
             ctx.CommandArgs,
             async (cmd, cancellationToken) =>
