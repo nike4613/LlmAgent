@@ -29,6 +29,8 @@ var chat = client.GetChatClient(arg.Model);
 
 var jsonCtx = new JsonContext();
 
+using var pwshEval = await PowershellEvaluator.CreateAsync(cts.Token).ConfigureAwait(false);
+
 var agent = new AgentLoop(chat, jsonCtx, $"Working directory: {Environment.CurrentDirectory}");
 
 agent.AddTool("sum_int", "Add two integers and return the result.",
@@ -38,6 +40,8 @@ agent.AddTool("sum_int", "Add two integers and return the result.",
     {
         return new(args.Lhs + args.Rhs);
     });
+
+pwshEval.RegisterTool(agent, jsonCtx);
 
 agent.OnMessage += (message) =>
 {

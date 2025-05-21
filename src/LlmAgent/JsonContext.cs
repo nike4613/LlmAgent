@@ -9,8 +9,10 @@ namespace LlmAgent;
 [JsonSerializable(typeof(JsonSchema))]
 [JsonSerializable(typeof(EvaluationResults))]
 [JsonSerializable(typeof(ArithmeticArgs))]
+[JsonSerializable(typeof(CommandArgs))]
 internal sealed partial class JsonContext : JsonSerializerContext
 {
 }
 
 internal readonly record struct ArithmeticArgs(int Lhs, int Rhs);
+internal readonly record struct CommandArgs(string Command);
