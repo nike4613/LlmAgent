@@ -3,7 +3,6 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Json.Schema;
 using OpenAI.Chat;
-using static LlmAgent.AgentLoop;
 
 namespace LlmAgent;
 
@@ -41,6 +40,27 @@ internal sealed class AgentLoop
     public delegate ValueTask<TResult> ToolFunction<TArguments, TResult>(TArguments args, CancellationToken cancellationToken);
 
     private sealed record ToolDefinition(ChatTool Tool, JsonSchema Schema, ToolFunction<JsonDocument, string> Invoke);
+
+    public void AddMissingToolsFrom(AgentLoop other)
+    {
+        foreach (var (name, def) in other.tools)
+        {
+            if (tools.TryAdd(name, def))
+            {
+                options.Tools.Add(def.Tool);
+            }
+        }
+    }
+
+    public bool RemoveTool(string name)
+    {
+        if (tools.Remove(name, out var def))
+        {
+            _ = options.Tools.Remove(def.Tool);
+            return true;
+        }
+        return false;
+    }
 
     public void AddTool(string name, string description, JsonSchema paramSchema, ToolFunction<JsonDocument, string> invoke)
     {
