@@ -97,7 +97,7 @@ internal sealed class AgentLoop
 
     public event Action<ChatMessage>? OnMessage;
 
-    private void AddMessage(ChatMessage msg)
+    public void AddMessage(ChatMessage msg)
     {
         OnMessage?.Invoke(msg);
         Messages.Add(msg);

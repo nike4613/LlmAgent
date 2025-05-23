@@ -25,6 +25,7 @@ internal sealed partial class Arguments
     public string? SessionFile { get; set; }
 
     [CommandLineArgument(IsPositional = true)]
-    [Description("The prompt to pass to the LLM.")]
-    public required string Prompt { get; set; }
+    [Description("The control file to evaluate.")]
+    [Alias("control")]
+    public required FileInfo ControlFile { get; set; }
 }

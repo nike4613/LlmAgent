@@ -3,6 +3,8 @@ using System.ClientModel.Primitives;
 using LlmAgent;
 using OpenAI;
 using OpenAI.Chat;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 var arg = Arguments.Parse(args);
 if (arg is null) return -1;
@@ -29,6 +31,16 @@ var client = new OpenAIClient(
 var chat = client.GetChatClient(arg.Model);
 
 var jsonCtx = new JsonContext();
+
+var yamlDeserializer = new DeserializerBuilder()
+    .WithNamingConvention(PascalCaseNamingConvention.Instance)
+    .Build();
+
+ControlModel model;
+using (var tr = arg.ControlFile.OpenText())
+{
+    model = yamlDeserializer.Deserialize<ControlModel>(tr);
+}
 
 using var pwshEval = await PowershellEvaluator.CreateAsync(cts.Token).ConfigureAwait(false);
 
@@ -63,7 +75,65 @@ agent.OnMessage += (message) =>
     }
 };
 
-await agent.Run(arg.Prompt, cts.Token).ConfigureAwait(false);
+if (model.GlobalContext.Length > 0)
+{
+    agent.AddMessage(new SystemChatMessage("The following user message is GLOBAL CONTEXT, and should always be considered, regardless of later system instruction."));
+    agent.AddMessage(new UserChatMessage(model.GlobalContext));
+}
+
+const string BeforePromptPreamble = "Any instructions before this point are complete, and should be ignored, unless explicitly instructed otherwise. " +
+    "The user's next prompt may rely on context from before this point. All previous system instruction remains in effect.";
+
+var prompt = model.Prompts[model.StartPrompt];
+while (prompt is not null)
+{
+    _ = agent.RemoveTool("select_next_action");
+
+    var evalPrompt = prompt;
+    prompt = null;
+    if (evalPrompt.Next.Count > 0)
+    {
+        agent.AddTool("select_next_action",
+            $$"""
+            Selects the next prompt.
+
+            THIS TOOL MUST ONLY BE USED ONCE, AND ONLY ONCE THE USER'S PROMPT HAS BEEN COMPLETELY FINISHED.
+            AFTER THIS TOOL IS USED, YOU MUST BE FINISHED.
+
+            You must select one of the following prompts to continue:
+            {{string.Join("", evalPrompt.Next.Select(n => $"--- \"{n.Name}\" ---\n{n.Description}\n"))}}
+            ------
+            When attempting to use one of the above, make sure the prompt name provided is EXACTLY the name inside the quotes.
+            """,
+            jsonCtx.ControlArgs,
+            (args, ct) =>
+            {
+                if (!evalPrompt.Next.Any(n => n.Name == args.NextPrompt))
+                {
+                    throw new ArgumentException($"'{args.NextPrompt}' is not a valid continuation prompt");
+                }
+
+                if (!model.Prompts.TryGetValue(args.NextPrompt, out var nextPrompt))
+                {
+                    throw new ArgumentException($"'{args.NextPrompt}' is not a valid continuation prompt");
+                }
+
+                prompt = nextPrompt;
+                return new($"Next action set to \"{args.NextPrompt}\"");
+            });
+
+        agent.AddMessage(new SystemChatMessage(
+            BeforePromptPreamble + " After completing the user's request, make sure to invoke the `select_next_action` tool to select a continuation. " +
+            "Only do so AFTER completing the user's request. Remember to consider instruction in `select_next_action` continuation descriptions."));
+    }
+    else
+    {
+        agent.AddMessage(new SystemChatMessage(
+            BeforePromptPreamble + " After completing the user's request, STOP. There is nothing more for you to do."));
+    }
+
+    await agent.Run(evalPrompt.Prompt, cts.Token).ConfigureAwait(false);
+}
 
 if (arg.SessionFile is { } sessionFile)
 {

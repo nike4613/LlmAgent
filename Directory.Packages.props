@@ -52,5 +52,6 @@
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MSBuildRequiredVersion)" IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" PrivateAssets="all" ExcludeAssets="Runtime" Pack="false" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" PrivateAssets="all" Pack="false" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynVersion)" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 </Project>
