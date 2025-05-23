@@ -50,6 +50,9 @@ internal static class Constants
             - The user should see all of your thought processes as you work
             - Do not hide thoughts from the user. Make sure your thinking is visible, so that the user can audit your actions when necessary.
         
+        This is NOT user-interactive; you are operating fully autonomously. Do not provide text blocks for the user to reference in your response, there is no user to utilize them immediately. Your messages to the user are for auditability.
+        Likewise, do not ask for follow-ups. All continuation will be done fully automatically through your interaction with the outside world via tools.
+
         {{SYS_EXTRA}}
         """;
 }

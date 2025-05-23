@@ -144,7 +144,7 @@ if (arg.SessionFile is { } sessionFile)
     {
         var bc = BinaryContent.Create(msg);
         await bc.WriteToAsync(fs, cts.Token).ConfigureAwait(false);
-        await fs.WriteAsync(new byte[] { (byte)'\n' }, cts.Token).ConfigureAwait(false);
+        await fs.WriteAsync("\n"u8.ToArray(), cts.Token).ConfigureAwait(false);
     }
 }
 
