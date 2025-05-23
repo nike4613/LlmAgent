@@ -28,4 +28,9 @@ internal sealed partial class Arguments
     [Description("The control file to evaluate.")]
     [Alias("control")]
     public required FileInfo ControlFile { get; set; }
+
+    [CommandLineArgument(ShortName = 'v')]
+    [Description("Variables to replace in the control file's prompts. The values provided will substitute for '{{key}}'.")]
+    [Alias("var")]
+    public Dictionary<string, string> Variables { get; } = new();
 }

@@ -1,5 +1,6 @@
 ﻿using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.Text;
 using LlmAgent;
 using OpenAI;
 using OpenAI.Chat;
@@ -78,7 +79,7 @@ agent.OnMessage += (message) =>
 if (model.GlobalContext.Length > 0)
 {
     agent.AddMessage(new SystemChatMessage("The following user message is GLOBAL CONTEXT, and should always be considered, regardless of later system instruction."));
-    agent.AddMessage(new UserChatMessage(model.GlobalContext));
+    agent.AddMessage(new UserChatMessage(FillVariables(model.GlobalContext, arg.Variables)));
 }
 
 const string BeforePromptPreamble = "Any instructions before this point are complete, and should be ignored, unless explicitly instructed otherwise. " +
@@ -101,7 +102,7 @@ while (prompt is not null)
             AFTER THIS TOOL IS USED, YOU MUST BE FINISHED.
 
             You must select one of the following prompts to continue:
-            {{string.Join("", evalPrompt.Next.Select(n => $"--- \"{n.Name}\" ---\n{n.Description}\n"))}}
+            {{string.Join("\n", evalPrompt.Next.Select(n => $"--- \"{n.Name}\" ---\n{n.Description}"))}}
             ------
             When attempting to use one of the above, make sure the prompt name provided is EXACTLY the name inside the quotes.
             """,
@@ -132,7 +133,7 @@ while (prompt is not null)
             BeforePromptPreamble + " After completing the user's request, STOP. There is nothing more for you to do."));
     }
 
-    await agent.Run(evalPrompt.Prompt, cts.Token).ConfigureAwait(false);
+    await agent.Run(FillVariables(evalPrompt.Prompt, arg.Variables), cts.Token).ConfigureAwait(false);
 }
 
 if (arg.SessionFile is { } sessionFile)
@@ -148,3 +149,47 @@ if (arg.SessionFile is { } sessionFile)
 }
 
 return 0;
+
+static string FillVariables(string input, Dictionary<string, string> vars)
+{
+    var sb = new StringBuilder();
+
+    var lookup = vars.GetAlternateLookup<ReadOnlySpan<char>>();
+
+    var sp = input.AsSpan();
+    int offs;
+    while ((offs = sp.IndexOf("{{", StringComparison.Ordinal)) >= 0)
+    {
+        _ = sb.Append(sp.Slice(0, offs));
+        sp = sp.Slice(offs + 2);
+
+        var idx = sp.IndexOf("}}", StringComparison.Ordinal);
+        if (idx < 0)
+        {
+            // not actually part of a name, we're done
+            _ = sb.Append("{{");
+            break;
+        }
+
+        var name = sp.Slice(0, idx);
+        sp = sp.Slice(idx + 2);
+
+        if (lookup.TryGetValue(name, out var value))
+        {
+            // we have a replacement
+            _ = sb.Append(value);
+        }
+        else
+        {
+            // we don't have a replacement, leave it as-is
+            _ = sb.Append("{{");
+            _ = sb.Append(name);
+            _ = sb.Append("}}");
+        }
+    }
+
+    // any remaining sp should be added verbatim
+    _ = sb.Append(sp);
+
+    return sb.ToString();
+}

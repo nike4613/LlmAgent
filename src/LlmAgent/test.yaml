@@ -1,0 +1,19 @@
+GlobalContext: |
+  Always speak in {{language}}, translating from instructions if necessary.
+  
+StartPrompt: start
+Prompts:
+  start:
+    Prompt: |
+      Select between the two options with equal probability.
+    Next:
+    - Name: a
+      Description: Option A
+    - Name: b
+      Description: Option B
+  a:
+    Prompt: |
+      Tell me which option you picked.
+  b:
+    Prompt: |
+      Tell me which option you picked, then tell me which option you did *not* pick.
