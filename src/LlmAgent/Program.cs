@@ -125,7 +125,7 @@ while (prompt is not null)
 
         agent.AddMessage(new SystemChatMessage(
             BeforePromptPreamble + " After completing the user's request, make sure to invoke the `select_next_action` tool to select a continuation. " +
-            "Only do so AFTER completing the user's request. Remember to consider instruction in `select_next_action` continuation descriptions."));
+            "Only do so AFTER completing the user's request, but make sure to use the tool BEFORE stopping. Remember to consider instruction in `select_next_action` continuation descriptions."));
     }
     else
     {
