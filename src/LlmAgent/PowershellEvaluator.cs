@@ -134,7 +134,7 @@ internal sealed class PowershellEvaluator : IDisposable
                     $Private:resultObj = @{};
                     try
                     {
-                        $Private:str = & { Invoke-Expression -Command $cmd; } | Out-String;
+                        $Private:str = & { Invoke-Expression -Command $cmd; } 2>&1 | Out-String;
                         $resultObj.exitcode = $LastExitCode;
                         $resultObj.output = $str;
                     }
