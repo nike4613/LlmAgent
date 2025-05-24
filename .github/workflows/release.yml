@@ -34,7 +34,8 @@ jobs:
           --self-contained true \
           --output ./publish/${{ matrix.runtime }} \
           -p:PublishSingleFile=true \
-          -p:PublishTrimmed=true
+          -p:PublishTrimmed=true \
+          -p:TrimMode=partial
 
     - name: Create archive
       run: |
