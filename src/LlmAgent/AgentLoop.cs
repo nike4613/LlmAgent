@@ -103,9 +103,12 @@ internal sealed class AgentLoop
         Messages.Add(msg);
     }
 
-    public async Task Run(string prompt, CancellationToken cancellationToken = default)
+    public async Task Run(string? prompt, CancellationToken cancellationToken = default)
     {
-        AddMessage(new UserChatMessage(prompt));
+        if (!string.IsNullOrEmpty(prompt))
+        {
+            AddMessage(new UserChatMessage(prompt));
+        }
 
         while (true)
         {

@@ -133,7 +133,13 @@ while (prompt is not null)
             BeforePromptPreamble + " After completing the user's request, STOP. There is nothing more for you to do."));
     }
 
-    await agent.Run(FillVariables(evalPrompt.Prompt, arg.Variables), cts.Token).ConfigureAwait(false);
+    agent.AddMessage(new UserChatMessage(FillVariables(evalPrompt.Prompt, arg.Variables)));
+    if (evalPrompt.Next.Count > 0)
+    {
+        agent.AddMessage(new SystemChatMessage("Remember to use the `select_next_action` tool to continue the workflow after completing this step."));
+    }
+
+    await agent.Run(null, cts.Token).ConfigureAwait(false);
 }
 
 if (arg.SessionFile is { } sessionFile)
