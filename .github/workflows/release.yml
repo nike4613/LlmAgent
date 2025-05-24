@@ -45,13 +45,14 @@ jobs:
         else
           tar -czf ../../LlmAgent-${{ matrix.runtime }}.tar.gz .
         fi
-
-    - name: Upload to release
-      uses: softprops/action-gh-release@v2
+        
+    - name: Create Release
+      uses: ncipollo/release-action@v1.16.0
       with:
-        files: |
+        artifacts: |
           LlmAgent-${{ matrix.runtime }}.*
-        draft: false
+        allowUpdates: true
+        replacesArtifacts: true
         prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
