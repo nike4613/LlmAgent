@@ -2,6 +2,7 @@
 using System.ClientModel.Primitives;
 using System.Text;
 using LlmAgent;
+using LlmAgent.OpenRouter;
 using OpenAI;
 using OpenAI.Chat;
 using YamlDotNet.Serialization;
@@ -19,6 +20,10 @@ Console.CancelKeyPress += (s, e) =>
     }
     cts.Cancel();
 };
+
+var api = new OpenRouterApi(arg.ApiUrl, arg.ApiKey);
+var models = await api.GetModelsAsync(cts.Token).ConfigureAwait(false);
+var keyInfo = await api.GetApiKeyInfoAsync(cts.Token).ConfigureAwait(false);
 
 var client = new OpenAIClient(
     new(arg.ApiKey),
